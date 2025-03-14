@@ -1,5 +1,6 @@
 let samples = [];
 let notes = [];
+let sfx = [];
 
 const _kick = 0;
 const _hihat = 1;
@@ -16,10 +17,19 @@ const _dha = 6;
 const _ni = 7;
 const _sa_ = 8;
 
-
 let mstr;
 let ix = 0;
 let ix_f = 0.0;
+
+const kick = () => samples[_kick].play();
+const snare = () => samples[_snare].play();
+const hihat = () => samples[_hihat].play();
+const ride = () => samples[_ride].play();
+const play_note = (i) => notes[int(i)].play();
+
+const squish = () => sfx[0].play();
+
+const check_play = (to_add, to_mod, play) => {if ( (ix + to_add) % to_mod == 0) play()}
 
 let font;
 let font2;
@@ -46,6 +56,7 @@ function preload() {
     notes[_ni] = loadSound('/assets/notes/ni.mp3');
     notes[_sa_] = loadSound('/assets/notes/sa_.mp3');
 
+    sfx[0] = loadSound('/assets/sfx/squish.mp3');
 
     myData = loadStrings('/assets/million_pi.txt');
 
@@ -56,6 +67,8 @@ function preload() {
     samples[_hihat].setVolume(0.5);
     samples[_snare].setVolume(0.3);
     samples[_ride].setVolume(0.5);
+
+    sfx[0].setVolume(0.7);
 }
 
 function setup() {
@@ -73,7 +86,7 @@ function setup() {
 
 function draw() {
     if (millis() > 2000) {
-        ix_f += deltaTime * RATE / 1000.0;
+        if (focused) ix_f += deltaTime * RATE / 1000.0;
         background(255, 212, 250);
     }
     else {
@@ -86,11 +99,16 @@ function draw() {
 
     textSize(36);
     fill(230, 60, 60);
-    text('πano splash', width / 2, 30);
+    text('πano splash', width / 2, 10);
 
     textSize(18);
     fill(42, 128, 46);
-    text('~~ 03/14/25 ~~', width / 2, 82);
+    text('~~ 03/14/25 ~~', width / 2, 62);
+
+    textAlign(CENTER, BOTTOM);
+    textSize(16);
+    fill(51);
+    text('CLICK if there is NO sound', width / 2, height - 10);
 
     textFont(font);
     textSize(50);
@@ -123,15 +141,10 @@ function draw() {
     }
 
 
+    cursor('/assets/paint-brush.png');
     displayBorders();
 }
 
-const kick = () => samples[_kick].play();
-const snare = () => samples[_snare].play();
-const hihat = () => samples[_hihat].play();
-const play_note = (i) => notes[int(i)].play();
-
-const check_play = (to_add, to_mod, play) => {if ( (ix + to_add) % to_mod == 0) play()}
 
 function doOnce() {
     const s = mstr[ix];
@@ -196,6 +209,11 @@ function doOnce() {
     }
 }
 
+function mouseClicked() {
+    if (millis() > 2000) {
+        squish();
+    }
+}
 
 function displayBorders() {
     noFill();
@@ -218,5 +236,4 @@ function htmlSetup() {
     _main.style.alignItems='center';
     _main.style.justifyContent='center';
     document.querySelector('canvas').style.borderRadius=`${BS}px`;
-    _main.click();
 }
