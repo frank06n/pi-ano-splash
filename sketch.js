@@ -7,15 +7,23 @@ const _hihat = 1;
 const _snare = 2;
 const _ride = 3;
 
-
-const _sa = 1;
-const _re = 2;
-const _ga = 3;
-const _ma = 4;
-const _pa = 5;
-const _dha = 6;
-const _ni = 7;
-const _sa_ = 8;
+const NOTES = (() => {
+    const _list = [1,2,3,4,5,6,7,8,0,9];
+    shuffle(_list);
+    return {
+        SA: _list[0],
+        RE: _list[1],
+        GA: _list[2],
+        MA: _list[3],
+        PA: _list[4],
+        DHA: _list[5],
+        NI: _list[6],
+        SA_: _list[7],
+        B0: _list[8],
+        B1: _list[9],
+        isPlayable: (s) => !(s=='.' || s==_list[8] || s==_list[9])
+    };
+})();
 
 let mstr;
 let ix = 0;
@@ -37,8 +45,9 @@ let charWidth;
 let charHeight;
 
 const RATE = 3.3; // per sec
-
 const BS = 10; // Border Size
+
+let particles = [];
 
 function preload() {
     soundFormats('mp3', 'wav');
@@ -47,14 +56,14 @@ function preload() {
     samples[_snare] = loadSound('/assets/samples/snare.wav');
     samples[_ride] = loadSound('/assets/samples/ride.wav');
 
-    notes[_sa] = loadSound('/assets/notes/sa.mp3');
-    notes[_re] = loadSound('/assets/notes/re.mp3');
-    notes[_ga] = loadSound('/assets/notes/ga.mp3');
-    notes[_ma] = loadSound('/assets/notes/ma.mp3');
-    notes[_pa] = loadSound('/assets/notes/pa.mp3');
-    notes[_dha] = loadSound('/assets/notes/dha.mp3');
-    notes[_ni] = loadSound('/assets/notes/ni.mp3');
-    notes[_sa_] = loadSound('/assets/notes/sa_.mp3');
+    notes[NOTES.SA] = loadSound('/assets/notes/sa.mp3');
+    notes[NOTES.RE] = loadSound('/assets/notes/re.mp3');
+    notes[NOTES.GA] = loadSound('/assets/notes/ga.mp3');
+    notes[NOTES.MA] = loadSound('/assets/notes/ma.mp3');
+    notes[NOTES.PA] = loadSound('/assets/notes/pa.mp3');
+    notes[NOTES.DHA] = loadSound('/assets/notes/dha.mp3');
+    notes[NOTES.NI] = loadSound('/assets/notes/ni.mp3');
+    notes[NOTES.SA_] = loadSound('/assets/notes/sa_.mp3');
 
     sfx[0] = loadSound('/assets/sfx/squish.mp3');
 
@@ -122,10 +131,10 @@ function draw() {
 
     const s = mstr[ix];
 
-    if (s == '.' || s == '0' || s == '9')
-        fill(84, 209, 207);
-    else
+    if (NOTES.isPlayable(s))
         fill(177, 24, 196);
+    else
+        fill(84, 209, 207);
     text(s, width / 2, height / 2);
 
     pop();
@@ -140,6 +149,16 @@ function draw() {
         doOnce();
     }
 
+    colorMode(HSL);
+    const remainingParticles = [];
+    for (let particle of particles) {
+      particle.update();
+      particle.show(); 
+      particle.fade();
+      if (!particle.isTotallyFaded()) remainingParticles.push(particle);
+    }
+    particles = remainingParticles;
+    colorMode(RGB);
 
     cursor('/assets/paint-brush.png');
     displayBorders();
@@ -154,7 +173,7 @@ function doOnce() {
     const GROUP_SIZE = 20;
     const GROUP_COUNT = 4;
 
-    if (!'.09'.includes(s)) play_note(s);
+    if (NOTES.isPlayable(s)) play_note(s);
 
     if (ix < START_KICK) 
         check_play(0, 4, kick);
@@ -210,9 +229,27 @@ function doOnce() {
 }
 
 function mouseClicked() {
-    if (millis() > 2000) {
+    if (millis() <= 2000) return;
         squish();
+
+    colorMode(HSL);
+    const h = random(0, 360);
+    const s = 64;
+    const l = 62;
+
+    const count = floor(random(8, 12));
+    for (let n = 0; n < count; n++) {
+        const x = mouseX + random(-25, 25);
+        const y = mouseY + random(-25, 25);
+        const d = 180/random(5, 18);
+        const c = color(
+            floor((h + random(-20, 20)) % 361), 
+            floor(constrain(s + random(-3, 3), 0, 100)),            
+            floor(constrain(l + random(-3, 3), 0, 100)),
+            255);
+        particles.push(new Particle(x,y,d,c));
     }
+    colorMode(RGB);
 }
 
 function displayBorders() {
@@ -236,4 +273,22 @@ function htmlSetup() {
     _main.style.alignItems='center';
     _main.style.justifyContent='center';
     document.querySelector('canvas').style.borderRadius=`${BS}px`;
+}
+
+
+
+function shuffle(array) {
+    let currentIndex = array.length;
+
+    // While there remain elements to shuffle...
+    while (currentIndex != 0) {
+
+        // Pick a remaining element...
+        let randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
 }
