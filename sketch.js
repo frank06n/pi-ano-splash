@@ -135,7 +135,7 @@ const check_play = (to_add, to_mod, play) => {if ( (ix + to_add) % to_mod == 0) 
 
 function doOnce() {
     const s = mstr[ix];
-    const START_KICK = 20;
+    const START_KICK = 15;
     const START_SNARE = 30;
     const START_HIHAT = 40;
     const GROUP_SIZE = 20;
@@ -218,4 +218,5 @@ function htmlSetup() {
     _main.style.alignItems='center';
     _main.style.justifyContent='center';
     document.querySelector('canvas').style.borderRadius=`${BS}px`;
+    _main.click();
 }
