@@ -36,6 +36,10 @@ const ride = () => samples[_ride].play();
 const play_note = (i) => notes[int(i)].play();
 
 const squish = () => sfx[0].play();
+const splash = () => sfx[1].play();
+const plop = () => sfx[2].play();
+const duck = () => sfx[3].play();
+const aah = () => sfx[4].play();
 
 const check_play = (to_add, to_mod, play) => {if ( (ix + to_add) % to_mod == 0) play()}
 
@@ -66,6 +70,10 @@ function preload() {
     notes[NOTES.SA_] = loadSound('/assets/notes/sa_.mp3');
 
     sfx[0] = loadSound('/assets/sfx/squish.mp3');
+    sfx[1] = loadSound('/assets/sfx/splash.mp3');
+    sfx[2] = loadSound('/assets/sfx/plop.mp3');
+    sfx[3] = loadSound('/assets/sfx/duck.mp3');
+    sfx[4] = loadSound('/assets/sfx/aah.mp3');
 
     myData = loadStrings('/assets/million_pi.txt');
 
@@ -81,7 +89,7 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(400, 400);
+    createCanvas(800, 600);
 
     mstr = myData[0];
 
@@ -114,10 +122,26 @@ function draw() {
     fill(42, 128, 46);
     text('~~ 03/14/25 ~~', width / 2, 62);
 
+    textSize(24);
+    textAlign(RIGHT, TOP);
+    fill(189, 110, 0);
+    text('Happy Pi Day', width / 2 - 20, 95);
+    textAlign(LEFT, TOP);
+    fill(0, 107, 143);
+    text('Happy Holi', width / 2 + 20, 95);
+
     textAlign(CENTER, BOTTOM);
     textSize(16);
     fill(51);
     text('CLICK if there is NO sound', width / 2, height - 10);
+
+
+    
+    textFont('Verdana');
+    textAlign(RIGHT, BOTTOM);
+    textSize(16);
+    fill(136, 51, 138);
+    text('(4 fun 😎 by @pritam)', width - 20, height - 15);
 
     textFont(font);
     textSize(50);
@@ -136,7 +160,6 @@ function draw() {
     else
         fill(84, 209, 207);
     text(s, width / 2, height / 2);
-
     pop();
 
     strokeWeight(4);
@@ -153,9 +176,8 @@ function draw() {
     const remainingParticles = [];
     for (let particle of particles) {
       particle.update();
-      particle.show(); 
-      particle.fade();
-      if (!particle.isTotallyFaded()) remainingParticles.push(particle);
+      particle.show();
+      if (particle.isAlive()) remainingParticles.push(particle);
     }
     particles = remainingParticles;
     colorMode(RGB);
@@ -230,7 +252,22 @@ function doOnce() {
 
 function mouseClicked() {
     if (millis() <= 2000) return;
-        squish();
+        
+    if (random(0,1) < 0.02) {
+        spawnMoaiParticle();
+    }
+    else if (random(0,1) < 0.08) {
+        spawnDuckParticle();
+    }
+    else {
+        spawnSplashParticles();
+    }
+    
+}
+
+function spawnSplashParticles() {
+    if (random(0,1) > 0.5) squish();
+    else splash()
 
     colorMode(HSL);
     const h = random(0, 360);
@@ -247,10 +284,21 @@ function mouseClicked() {
             floor(constrain(s + random(-3, 3), 0, 100)),            
             floor(constrain(l + random(-3, 3), 0, 100)),
             255);
-        particles.push(new Particle(x,y,d,c));
+        const life = random(4,6);
+        particles.push(new Particle(x,y,d,c,life));
     }
     colorMode(RGB);
 }
+
+function spawnDuckParticle() {
+    duck();
+    particles.push(new DuckParticle(mouseX, mouseY, 50, 6));
+}
+function spawnMoaiParticle() {
+    aah();
+    particles.push(new MoaiParticle(mouseX, mouseY, 50, 6));
+}
+
 
 function displayBorders() {
     noFill();
